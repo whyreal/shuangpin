@@ -1,5 +1,9 @@
 自用双拼方案。 使用搜狗输入法外挂 ini 实现。
 
+![键位图](./resources/键位图.png)
+
+> 重码率极高，不建议尝试。
+
 # 工具
 
 - [双拼布局的统计计算](https://tiansh.github.io/lqbz/sp/)
