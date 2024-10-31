@@ -1,0 +1,156 @@
+# Rime schema
+# encoding: utf-8
+
+schema:
+  schema_id: double_pinyin_whyreal
+  name: Y双拼
+  version: "0.1"
+  author:
+    - whyreal <y_real@163.com>
+  description: |
+    whyreal双拼
+  dependencies:
+    - stroke
+
+switches:
+  - name: ascii_mode
+    states: [ 中文, 西文 ]
+    reset: 0
+  - name: full_shape
+    states: [ 半角, 全角 ]
+    reset: 0
+  - name: simplification
+    states: [ 漢字, 汉字 ]
+    reset: 1
+  - name: ascii_punct
+    states: [ 。，, ．， ]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+    #- fluid_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - reverse_lookup_translator
+    - script_translator
+    - lua_translator@date_translator
+  filters:
+    - simplifier
+    - uniquifier
+
+speller:
+  alphabet: zyxwvutsrqponmlkjihgfedcba
+  delimiter: " '"
+  algebra:
+    - erase/^xx$/
+    - xform/^zh?/Z/
+    - xform/^ch?/C/
+    - xform/^sh?/S/
+
+    - xform/ying?$/yen/
+    - xform/^y(.+)/E$1/
+
+    - xform/ing?$/K/
+    - xform/iu$/U/
+    - xform/ui$/V/
+
+    - xform/^ou$/$1OO/
+    - xform/ou$/O/
+
+    - xform/ei$/W/
+
+    - xform/^ao$/AP/
+    - xform/ao$/P/
+    - xform/^ai$/AI/
+    - xform/ai$/I/
+    - xform/^an$/AJ/
+    - xform/an$/J/
+    - xform/^ang$/AH/
+    - xform/ang$/H/
+    - xform/ong$/L/
+
+    - xform/([uv])n$/K/
+    - xform/^eng?$/$1EK/
+    - xform/eng?$/K/
+
+    #- xform/[uv]e$/U/
+    - fuzz/^(.).+/$1/
+    - fuzz/^(.)([iuv])(.+)/$1$2/
+    - fuzz/^(.)([iuv])(.+)/$1$3/
+
+    - xlit/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/
+    # fuzz abbrev derive
+
+# 引入八股文
+grammar:
+  language: zh-hans-t-essay-bgw
+
+translator:
+  dictionary: rime_ice
+  #strict_spelling: true
+  prism: double_pinyin_whyreal    # 多方案共用一个词库时，为避免冲突，需要用 prism 指定一个名字。
+  contextual_suggestions: true  # 开启八股文
+  initial_quality: 1.2          # 拼音的权重应该比英文大
+  preedit_format:
+    - "xform/(^|[ '])oj/$1AN/"
+    - "xform/(^|[ '])kk/$1EN/"
+    - "xform/(^|[ '])hh/$1ANG/"
+    - "xform/(^|[ '])pp/$1AO/"
+    # - xform/([jqx])j/$1IAN/
+    # - xform/([jqx])h/$1IANG/
+    # - xform/([jqx])l/$1IONG/
+    # - xform/([jqx])p/$1IAO/
+    - xform/(\w)ik/$1IN/
+    #- xform/(\w)uk/$1UN/
+    - xform/fk/fEN/
+    - xform/([jqxe])k/$1IN/
+    - xform/(\w)k/$1N/
+    - xform/(\w)ij/$1IAN/
+    - xform/(\w)uj/$1UAN/
+    - xform/(\w)j/$1AN/
+    - xform/(\w)ih/$1IANG/
+    - xform/(\w)uh/$1UANG/
+    - xform/(\w)h/$1ANG/
+    - xform/(\w)ip/$1IAO/
+    - xform/(\w)p/$1AO/
+    - xform/(\w)il/$1IONG/
+    - xform/(\w)l/$1ONG/
+    - "xform/(^|[ '])v/$1Z/"
+    - "xform/(^|[ '])e/$1Y/"
+    # - xform/(\w)v/$1UI/
+    - xlit/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/
+
+reverse_lookup:
+  dictionary: stroke
+  enable_completion: true
+  prefix: "`"
+  suffix: "'"
+  tips: 〔筆畫〕
+  preedit_format:
+    - xlit/hspnz/一丨丿丶乙/
+  comment_format:
+    - xform/([nl])v/$1ü/
+
+punctuator:
+  import_preset: symbols_custom  # 从 symbols_custom.yaml 引入自己自定义的
+
+key_binder:
+  import_preset: default
+
+recognizer:
+  import_preset: default
+  patterns:
+    reverse_lookup: "`[a-z]*'?$"
